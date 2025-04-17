@@ -105,6 +105,7 @@
       font-size: 14px;
       color: #555;
       line-height: 1.6;
+      text-align: justify;
     }
     .note strong {
       color: #333;
@@ -133,7 +134,6 @@
     </div>
 
     <div id="status-container">
-      <h2>Result:</h2>
       <div id="result-details">
         <!-- Will be populated dynamically -->
       </div>
@@ -147,70 +147,90 @@
   <script>
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbz3ag29MqXCGsGR35Uv3E6uX0VjUkOPUpbDAVgLmBuZl-EBHa1HKXgy-GEK5P3b4SjT/exec'; // Replace with your actual web app URL
 
-    // Check status function
-    function checkMoEStatus() {
-      const passportNumberInput = document.getElementById('passportNumber');
-      const statusContainer = document.getElementById('status-container');
-      const resultDetails = document.getElementById('result-details');
-      const loadingDiv = document.getElementById('loading');
+// Check status function
+function checkMoEStatus() {
+  const passportNumberInput = document.getElementById('passportNumber');
+  const statusContainer = document.getElementById('status-container');
+  const resultDetails = document.getElementById('result-details');
+  const loadingDiv = document.getElementById('loading');
 
-      const passportNumber = passportNumberInput.value.trim();
+  // Convert to uppercase for consistent matching with backend
+  const passportNumber = passportNumberInput.value.trim().toUpperCase();
 
-      if (!passportNumber) {
-        resultDetails.innerHTML = `<p class="status-error">Please enter your passport number.</p>`;
-        statusContainer.style.display = 'block';
+  if (!passportNumber) {
+    resultDetails.innerHTML = `<p class="status-error">Please enter your passport number.</p>`;
+    statusContainer.style.display = 'block';
+    statusContainer.className = 'error';
+    return;
+  }
+
+  // Show loading
+  loadingDiv.style.display = 'block';
+  statusContainer.style.display = 'none';
+  resultDetails.innerHTML = '';
+
+  fetch(`${webAppUrl}?passportNumber=${encodeURIComponent(passportNumber)}`)
+    .then(response => response.json())
+    .then(data => {
+      loadingDiv.style.display = 'none';
+      statusContainer.style.display = 'block';
+
+      if (data.error) {
+        resultDetails.innerHTML = `<p class="status-error">${data.error}</p>`;
         statusContainer.className = 'error';
-        return;
-      }
+      } else {
+        const name = data["Student Name"] || "Not Available";
+        const passport = data["Passport Number"] || passportNumber;
+        const status = data["Status"] || "Unknown";
 
-      // Show loading
-      loadingDiv.style.display = 'block';
-      statusContainer.style.display = 'none';
-      resultDetails.innerHTML = '';
-
-      fetch(`${webAppUrl}?passportNumber=${encodeURIComponent(passportNumber)}`)
-        .then(response => response.json())
-        .then(data => {
-          loadingDiv.style.display = 'none';
-          statusContainer.style.display = 'block';
-
-          if (data.error) {
-            resultDetails.innerHTML = `<p class="status-error">${data.error}</p>`;
-            statusContainer.className = 'error';
-          } else {
-            const name = data["Student Name"] || "Not Available";
-            const passport = data["Passport Number"] || passportNumber;
-            const status = data["Status"] || "Unknown";
-
-            if (status === "Approved") {
-              statusContainer.className = 'approved';
-              resultDetails.innerHTML = `
-                <ul>
-                  <li><strong>Student Name:</strong> ${name}</li>
-                  <li><strong>Passport Number:</strong> ${passport}</li>
-                  <li><strong>Status:</strong> <span class="status-approved">${status}</span></li>
-                </ul>
-              `;
-            } else {
-              statusContainer.className = 'error';
-              resultDetails.innerHTML = `
-                <ul>
-                  <li><strong>Student Name:</strong> ${name}</li>
-                  <li><strong>Passport Number:</strong> ${passport}</li>
-                  <li><strong>Status:</strong> <span class="status-error">${status}</span></li>
-                </ul>
-              `;
-            }
-          }
-        })
-        .catch(error => {
-          console.error("Error:", error);
-          loadingDiv.style.display = 'none';
-          statusContainer.style.display = 'block';
+        if (status === "Approved") {
+          statusContainer.className = 'approved';
+          resultDetails.innerHTML = `
+            <ul>
+              <li><strong>Student Name:</strong> ${name}</li>
+              <li><strong>Passport Number:</strong> ${passport}</li>
+              <li><strong>Status:</strong> <span class="status-approved">${status}</span></li>
+            </ul>
+            <div class="note">
+              <p>Dear Parents and Guardians,<br>
+              We are delighted to welcome you and your child(ren) to the King Henry VIII College community! Here is the pre-arrival noted when you and the student(s) entering to Malaysia before school enrolment date.</p>
+              <p><strong>Key Travel and Preparation Guidelines:</strong><br> These guidelines will assist you in ensuring a smooth transition to Malaysia.</p>
+              <p>To help you prepare effectively, please review and follow the steps outlined below:</p>
+              <ul>
+                <li><strong>1. Document Preparation:</strong> Please visit our <a href="https://sites.google.com/kinghenryviii.edu.my/kh8visa">VISA Support Hub</a> for visa related information including the document checklist for your reference.</li>
+                <li><strong>2. Travel Checklist:</strong> Ensure you bring both original and translated versions of all required visa application documents, using the provided checklist to avoid omissions.</li>
+                <li><strong>3. Unaccompanied Minor Travel:</strong> If your child is traveling without an accompanying adult, please arrange "Special Assistance" with the airline. This service may vary by airline, so we recommend contacting the airline directly for details.</p>
+		<p>We advise against booking flights arriving late at night or in the early morning, as our transportation service will not be available during these times. For transportation requests, please email <a href="mailto:transport@kinghenryviii.edu.my">@KH8 Transportation</a>.</li>
+                <li><strong>4. Arrival in Malaysia (Early Arrival not more than 1 month):</strong> If you plan to arrive early, we encourage you to submit visa application documents within the first week of entry. Early preparation is essential to avoid delays in securing your child’s visa.</li>
+                <li><strong>5. Submission of Visa Application Documents:</strong> Submit all visa application documents to the Visa Department within the first week of your arrival. Timely submission helps reduce waiting times during document processing.</p>
+	<p>For pre-arrival verification, email scanned copies of your documents to <a href="visa@kinghenryviii.edu.my">@KH8 Visa</a>. Our team will review them and provide guidance on any necessary adjustments to ensure a smooth visa application process.</li>
+              </ul>
+		<p>For further assistance or inquiries regarding visa-related matters, please visit our <a href="https://sites.google.com/kinghenryviii.edu.my/kh8visa">VISA Support Hub</a> or contact our Visa Team at <a href="visa@kinghenryviii.edu.my">@KH8 Visa</a>. Our Visa Liaison Officers will be happy to assist you.
+              </ul>
+              <p>We wish you safe travels and look forward to warmly welcoming you and your child(ren) to King Henry VIII College soon.</p>
+              <p>Kind regards,<br> International Student Visa Office<br> King Henry VIII College</p>
+            </div>
+          `;
+        } else {
           statusContainer.className = 'error';
-          resultDetails.innerHTML = `<p class="status-error">An error occurred while fetching the status.</p>`;
-        });
-    }
+          resultDetails.innerHTML = `
+            <ul>
+              <li><strong>Student Name:</strong> ${name}</li>
+              <li><strong>Passport Number:</strong> ${passport}</li>
+              <li><strong>Status:</strong> <span class="status-error">${status}</span></li>
+            </ul>
+          `;
+        }
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      loadingDiv.style.display = 'none';
+      statusContainer.style.display = 'block';
+      statusContainer.className = 'error';
+      resultDetails.innerHTML = `<p class="status-error">An error occurred while fetching the status.</p>`;
+    });
+}
 
     // Clear input fields
     function clearFields() {
