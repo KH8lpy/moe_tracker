@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoE Supporting Letter Status Tracker</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #status-container {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #f0f0f0; /* Default gray background */
+      opacity: 0;
+      animation: fadeIn 1s ease-in forwards;
+    }
+    #status-container.approved {
+      background-color: #d4edda; /* Green background for Approved status */
+      border-left: 5px solid #28a745;
+    }
+    #status-container.error {
+      background-color: #f8d7da;
+      border-left: 5px solid #dc3545;
+    }
+    .status-approved {
+      color: #155724;
+      font-weight: bold;
+    }
+    .status-error {
+      color: #721c24;
+    }
+    .loading {
+      text-align: center;
+      font-size: 18px;
+      display: none;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .note {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+    }
+    .note strong {
+      color: #333;
+    }
+    #result-details ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #result-details ul li {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>MoE Supporting Letter Status Tracker</h1>
+    <label for="passportNumber">Enter Passport Number:</label>
+    <input type="text" id="passportNumber" placeholder="e.g., A1234567">
+    <button onclick="checkMoEStatus()">Check Status</button>
+    <button onclick="clearFields()">Clear</button>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <div id="status-container">
+      <h2>Result:</h2>
+      <div id="result-details">
+        <!-- Will be populated dynamically -->
+      </div>
+    </div>
+
+    <div class="note">
+      <p><strong>Note:</strong> The information is retrieved based on the latest available data. If your status does not appear, please try again later or contact support.</p>
+    </div>
+  </div>
+
+  <script>
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycbz3ag29MqXCGsGR35Uv3E6uX0VjUkOPUpbDAVgLmBuZl-EBHa1HKXgy-GEK5P3b4SjT/exec'; // Replace with your actual web app URL
+
+    // Check status function
+    function checkMoEStatus() {
+      const passportNumberInput = document.getElementById('passportNumber');
+      const statusContainer = document.getElementById('status-container');
+      const resultDetails = document.getElementById('result-details');
+      const loadingDiv = document.getElementById('loading');
+
+      const passportNumber = passportNumberInput.value.trim();
+
+      if (!passportNumber) {
+        resultDetails.innerHTML = `<p class="status-error">Please enter your passport number.</p>`;
+        statusContainer.style.display = 'block';
+        statusContainer.className = 'error';
+        return;
+      }
+
+      // Show loading
+      loadingDiv.style.display = 'block';
+      statusContainer.style.display = 'none';
+      resultDetails.innerHTML = '';
+
+      fetch(`${webAppUrl}?passportNumber=${encodeURIComponent(passportNumber)}`)
+        .then(response => response.json())
+        .then(data => {
+          loadingDiv.style.display = 'none';
+          statusContainer.style.display = 'block';
+
+          if (data.error) {
+            resultDetails.innerHTML = `<p class="status-error">${data.error}</p>`;
+            statusContainer.className = 'error';
+          } else {
+            const name = data["Student Name"] || "Not Available";
+            const passport = data["Passport Number"] || passportNumber;
+            const status = data["Status"] || "Unknown";
+
+            if (status === "Approved") {
+              statusContainer.className = 'approved';
+              resultDetails.innerHTML = `
+                <ul>
+                  <li><strong>Student Name:</strong> ${name}</li>
+                  <li><strong>Passport Number:</strong> ${passport}</li>
+                  <li><strong>Status:</strong> <span class="status-approved">${status}</span></li>
+                </ul>
+              `;
+            } else {
+              statusContainer.className = 'error';
+              resultDetails.innerHTML = `
+                <ul>
+                  <li><strong>Student Name:</strong> ${name}</li>
+                  <li><strong>Passport Number:</strong> ${passport}</li>
+                  <li><strong>Status:</strong> <span class="status-error">${status}</span></li>
+                </ul>
+              `;
+            }
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          loadingDiv.style.display = 'none';
+          statusContainer.style.display = 'block';
+          statusContainer.className = 'error';
+          resultDetails.innerHTML = `<p class="status-error">An error occurred while fetching the status.</p>`;
+        });
+    }
+
+    // Clear input fields
+    function clearFields() {
+      document.getElementById('passportNumber').value = '';
+      document.getElementById('status-container').style.display = 'none';
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    // Listen for Enter key to trigger the checkMoEStatus function
+    document.getElementById('passportNumber').addEventListener('keypress', function(event) {
+      if (event.key === 'Enter') {
+        checkMoEStatus();
+      }
+    });
+  </script>
+
+</body>
+</html>
