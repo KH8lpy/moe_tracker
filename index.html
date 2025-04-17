@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MoE Supporting Letter Status Tracker</title>
+  <title>MoE Support Letter Tracker</title>
   <style>
     body {
       font-family: 'Open Sans', sans-serif;
@@ -122,7 +122,7 @@
 <body>
 
   <div class="container">
-    <h1>MoE Supporting Letter Status Tracker</h1>
+    <h1>MoE Support Letter Tracker</h1>
     <label for="passportNumber">Enter Passport Number:</label>
     <input type="text" id="passportNumber" placeholder="e.g., A1234567">
     <button onclick="checkMoEStatus()">Check Status</button>
@@ -193,8 +193,9 @@ function checkMoEStatus() {
             </ul>
             <div class="note">
               <p>Dear Parents and Guardians,<br>
-              We are delighted to welcome you and your child(ren) to the King Henry VIII College community! Here is the pre-arrival noted when you and the student(s) entering to Malaysia before school enrolment date.</p>
-              <p><strong>Key Travel and Preparation Guidelines:</strong><br> These guidelines will assist you in ensuring a smooth transition to Malaysia.</p>
+              We are delighted to welcome you and your child(ren) to the King Henry VIII College community! Here is the pre-arrival noted when you and the student(s) entering to Malaysia before school enrolment date. Please note that the MoE Supporting Letter is only valid for one year.</p>
+
+              <strong>Key Travel and Preparation Guidelines:</strong><br> These guidelines will assist you in ensuring a smooth transition to Malaysia.</p>
               <p>To help you prepare effectively, please review and follow the steps outlined below:</p>
               <ul>
                 <li><strong>1. Document Preparation:</strong> Please visit our <a href="https://sites.google.com/kinghenryviii.edu.my/kh8visa">VISA Support Hub</a> for visa related information including the document checklist for your reference.</li>
@@ -209,6 +210,18 @@ function checkMoEStatus() {
               </ul>
               <p>We wish you safe travels and look forward to warmly welcoming you and your child(ren) to King Henry VIII College soon.</p>
               <p>Kind regards,<br> International Student Visa Office<br> King Henry VIII College</p>
+            </div>
+          `;
+        } else if (status === "In progress") {
+          statusContainer.className = 'error';
+          resultDetails.innerHTML = `
+            <ul>
+              <li><strong>Student Name:</strong> ${name}</li>
+              <li><strong>Passport Number:</strong> ${passport}</li>
+              <li><strong>Status:</strong> <span class="status-error">${status}</span></li>
+            </ul>
+            <div class="note">
+              <p><strong>Note:</strong> According to the standard application timeline, the approval will only be granted one month after the submission date. Students are <strong>not allowed</strong> to join the school if the MoE Supporting Letter is not been approved.</p>
             </div>
           `;
         } else {
